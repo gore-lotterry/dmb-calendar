@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ДМБ Календарь 💚</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a24;
+      --accent: #c8a96e;
+      --accent2: #e8c99e;
+      --text: #e8e4dc;
+      --muted: #6b6875;
+      --green: #4a7c59;
+      --green2: #6aaa80;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Stars background */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--d) ease-in-out infinite;
+      animation-delay: var(--delay);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.4); }
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+
+    .title-small {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      font-size: 11px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+      animation: fadeDown 1s ease both;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(38px, 7vw, 72px);
+      line-height: 1.1;
+      letter-spacing: 2px;
+      animation: fadeDown 1s ease 0.2s both;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent2);
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      animation: fadeDown 1s ease 0.4s both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Countdown hero */
+    .countdown-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      animation: fadeUp 1s ease 0.6s both;
+    }
+
+    .countdown-ring {
+      position: relative;
+      width: 280px;
+      height: 280px;
+    }
+
+    .countdown-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: var(--surface2);
+      stroke-width: 6;
+    }
+
+    .ring-fg {
+      fill: none;
+      stroke: url(#ringGrad);
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .countdown-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .days-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 80px;
+      line-height: 1;
+      color: var(--accent2);
+      animation: pulsate 3s ease-in-out infinite;
+    }
+
+    @keyframes pulsate {
+      0%, 100% { text-shadow: 0 0 20px rgba(200,169,110,0.3); }
+      50%       { text-shadow: 0 0 40px rgba(200,169,110,0.7); }
+    }
+
+    .days-label {
+      font-size: 10px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .until-label {
+      margin-top: 6px;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--accent);
+    }
+
+    /* Progress bar */
+    .progress-section {
+      position: relative;
+      z-index: 1;
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 0 30px;
+      animation: fadeUp 1s ease 0.8s both;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--accent));
+      border-radius: 10px;
+      transition: width 2s cubic-bezier(0.4,0,0.2,1) 1s;
+      width: 0;
+    }
+
+    .progress-pct {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Date info cards */
+    .dates-row {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 16px;
+      max-width: 500px;
+      margin: 0 auto 50px;
+      padding: 0 20px;
+      animation: fadeUp 1s ease 1s both;
+    }
+
+    .date-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid rgba(200,169,110,0.12);
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .date-card-label {
+      font-size: 9px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .date-card-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      color: var(--accent2);
+    }
+
+    /* Calendar grid */
+    .calendar-section {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    .section-heading {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 32px;
+      letter-spacing: 2px;
+      color: var(--accent2);
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 40px;
+    }
+
+    .months-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .month-block {
+      background: var(--surface);
+      border: 1px solid rgba(200,169,110,0.08);
+      border-radius: 16px;
+      padding: 24px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .month-block.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .month-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 300;
+      color: var(--accent);
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+    }
+
+    .month-name span {
+      font-size: 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      color: var(--muted);
+      margin-left: 10px;
+      letter-spacing: 2px;
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 8px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 4px 0;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .day-cell {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 13px;
+      position: relative;
+      cursor: default;
+      transition: all 0.2s ease;
+    }
+
+    .day-cell.empty {
+      background: transparent;
+    }
+
+    .day-cell.past {
+      background: var(--surface2);
+      color: var(--muted);
+    }
+
+    .day-cell.past::after {
+      content: '✓';
+      position: absolute;
+      font-size: 10px;
+      color: var(--green2);
+      bottom: 3px;
+      opacity: 0.6;
+    }
+
+    .day-cell.today {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0a0a0f;
+      font-weight: 500;
+      box-shadow: 0 0 20px rgba(200,169,110,0.4);
+      animation: todayPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes todayPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(200,169,110,0.4); }
+      50%       { box-shadow: 0 0 35px rgba(200,169,110,0.7); }
+    }
+
+    .day-cell.future {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .day-cell.future:hover {
+      background: rgba(200,169,110,0.1);
+      border: 1px solid rgba(200,169,110,0.3);
+      transform: scale(1.08);
+    }
+
+    .day-cell.dmb-day {
+      background: linear-gradient(135deg, var(--green), var(--green2)) !important;
+      color: #fff !important;
+      font-weight: 500;
+      box-shadow: 0 0 25px rgba(74,124,89,0.5);
+      animation: dmbPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes dmbPulse {
+      0%, 100% { box-shadow: 0 0 25px rgba(74,124,89,0.5); }
+      50%       { box-shadow: 0 0 50px rgba(106,170,128,0.8); }
+    }
+
+    /* Tooltip */
+    .day-cell[data-phrase] { cursor: pointer; }
+
+    .popup {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      width: min(520px, calc(100vw - 32px));
+      transform: translate(-50%, 30px);
+      opacity: 0;
+      pointer-events: none;
+      background: rgba(18,18,30,0.96);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(200,169,110,0.45);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      padding: 20px 24px;
+      text-align: center;
+      z-index: 300;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .popup.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .pop-date {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .pop-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px 20px;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: var(--muted);
+      border-top: 1px solid rgba(200,169,110,0.08);
+    }
+
+    footer strong {
+      color: var(--accent2);
+      font-weight: 400;
+    }
+
+    /* Floating hearts */
+    .heart {
+      position: fixed;
+      font-size: 16px;
+      pointer-events: none;
+      animation: floatUp 4s ease-in forwards;
+      z-index: 5;
+    }
+
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(-120px) scale(0.4) rotate(20deg); }
+    }
+
+    @media (min-width: 1024px) {
+      .layout {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(380px, 460px) 1fr;
+        gap: 56px;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 40px;
+        align-items: start;
+      }
+      .hero {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow-y: auto;
+        scrollbar-width: none;
+      }
+      .hero::-webkit-scrollbar { display: none; }
+      header { padding: 20px 0 10px; }
+      .countdown-wrap { padding: 10px 0; }
+      .progress-section { width: 100%; max-width: none; margin: 20px 0; padding: 0; }
+      .dates-row { width: 100%; max-width: none; margin: 0; padding: 0; }
+      .calendar-section { max-width: none; margin: 0; padding: 70px 0 80px; }
+      .months-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      .section-heading { text-align: left; }
+      .section-sub { text-align: left; }
+    }
+
+    @media (min-width: 1700px) {
+      .layout { max-width: 1760px; }
+      .months-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .days-number { font-size: 60px; }
+      .countdown-ring { width: 220px; height: 220px; }
+      .day-cell { font-size: 11px; }
+      .month-block { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="layout">
+<aside class="hero">
+<header>
+  <div class="title-small">для Кристинки 💛</div>
+  <h1>Он вернётся,<br><em>Пуська</em></h1>
+  <div class="subtitle">ДМБ · Календарь · 2026–2027</div>
+</header>
+
+<div class="countdown-wrap">
+  <div class="countdown-ring">
+    <svg viewBox="0 0 280 280">
+      <defs>
+        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#4a7c59"/>
+          <stop offset="100%" stop-color="#c8a96e"/>
+        </linearGradient>
+      </defs>
+      <circle class="ring-bg" cx="140" cy="140" r="125"/>
+      <circle class="ring-fg" id="ringFg" cx="140" cy="140" r="125"/>
+    </svg>
+    <div class="countdown-inner">
+      <div class="days-number" id="daysLeft">—</div>
+      <div class="days-label">дней до дембеля</div>
+      <div class="until-label">ещё чуть-чуть ♡</div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-labels">
+    <span>призыв · 18.11.2026</span>
+    <span>дмб · 18.11.2027</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="progress-pct" id="progressPct"></div>
+</div>
+
+<div class="dates-row">
+  <div class="date-card">
+    <div class="date-card-label">Призыв</div>
+    <div class="date-card-value">18 ноя 2026</div>
+  </div>
+  <div class="date-card">
+    <div class="date-card-label">Сегодня</div>
+    <div class="date-card-value" id="todayDate">—</div>
+  </div>
+  <div class="date-card">
+    <div class="date-card-label">Дембель</div>
+    <div class="date-card-value">18 ноя 2027</div>
+  </div>
+</div>
+
+</aside>
+
+<div class="calendar-section">
+  <div class="section-heading">Каждый день — ближе</div>
+  <div class="section-sub">наведи на день, чтобы увидеть послание</div>
+  <div class="months-grid" id="monthsGrid"></div>
+</div>
+
+</div>
+
+<footer>
+  Жди меня, и я вернусь — <strong>Кристинка</strong>, только жди ♡
+</footer>
+
+<div class="popup" id="popup"><div class="pop-date" id="popDate"></div><div class="pop-text" id="popText"></div></div>
+
+<script src="phrases.js"></script>
+<script>
+  // ===== CONFIG =====
+  const CALL_DATE = new Date('2026-11-18T00:00:00');
+  const DMB_DATE  = new Date('2027-11-18T00:00:00');
+
+  // ===== Stars =====
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      --d:${2+Math.random()*4}s;
+      --delay:${Math.random()*4}s;
+      opacity:${0.1+Math.random()*0.4};
+      width:${1+Math.random()*2}px;
+      height:${1+Math.random()*2}px;
+    `;
+    starsEl.appendChild(s);
+  }
+
+  // ===== Countdown =====
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const msLeft  = DMB_DATE - today;
+  const daysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
+
+  document.getElementById('daysLeft').textContent = daysLeft;
+
+  const totalDays = Math.round((DMB_DATE - CALL_DATE) / 86400000); // 365
+  const elapsed   = Math.round((today - CALL_DATE) / 86400000);
+  const pct       = Math.max(0, Math.min(100, (elapsed / totalDays) * 100));
+
+  setTimeout(() => {
+    document.getElementById('progressFill').style.width = pct.toFixed(1) + '%';
+  }, 200);
+  document.getElementById('progressPct').textContent =
+    pct <= 0 ? 'Служба ещё не началась' :
+    pct >= 100 ? 'Дембель! 🎉' :
+    pct.toFixed(1) + '% службы позади';
+
+  // Ring
+  const circ = 2 * Math.PI * 125;
+  const ringFg = document.getElementById('ringFg');
+  ringFg.style.strokeDasharray = circ;
+  ringFg.style.strokeDashoffset = circ; // start hidden
+  setTimeout(() => {
+    const filled = circ * (pct / 100);
+    ringFg.style.strokeDashoffset = circ - filled;
+  }, 400);
+
+  // Today date
+  const months = ['января','февраля','марта','апреля','мая','июня',
+                  'июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('todayDate').textContent =
+    `${today.getDate()} ${months[today.getMonth()]}`;
+
+  // ===== Calendar =====
+  const grid = document.getElementById('monthsGrid');
+  const wdays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+  const startMonth = new Date(CALL_DATE.getFullYear(), CALL_DATE.getMonth(), 1);
+  const endMonth   = new Date(DMB_DATE.getFullYear(),  DMB_DATE.getMonth(),  1);
+
+  let cur = new Date(startMonth);
+  while (cur <= endMonth) {
+    const y = cur.getFullYear();
+    const m = cur.getMonth();
+
+    const block = document.createElement('div');
+    block.className = 'month-block';
+
+    const mnameRu = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                     'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][m];
+    block.innerHTML = `
+      <div class="month-name">${mnameRu} <span>${y}</span></div>
+      <div class="weekdays">${wdays.map(d=>`<div class="weekday">${d}</div>`).join('')}</div>
+      <div class="days-grid" id="grid-${y}-${m}"></div>
+    `;
+    grid.appendChild(block);
+
+    const dayGrid = block.querySelector(`#grid-${y}-${m}`);
+
+    const firstDay = new Date(y, m, 1);
+    let dow = firstDay.getDay(); // 0=sun
+    dow = (dow === 0) ? 6 : dow - 1; // mon=0
+
+    for (let i = 0; i < dow; i++) {
+      const emp = document.createElement('div');
+      emp.className = 'day-cell empty';
+      dayGrid.appendChild(emp);
+    }
+
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(y, m, d);
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      cell.textContent = d;
+      cell.dataset.date = d + ' ' + months[m];
+
+      const dayIdx = Math.round((date - CALL_DATE) / 86400000);
+
+      if (date.getTime() === DMB_DATE.getTime()) {
+        cell.classList.add('dmb-day');
+        cell.title = '🎉 ДЕМБЕЛЬ!';
+        cell.setAttribute('data-phrase','🎉 ДЕМБЕЛЬ! Иду домой!');
+      } else if (date < CALL_DATE) {
+        cell.classList.add('past');
+        // days before service
+      } else if (date.getTime() === today.getTime()) {
+        cell.classList.add('today');
+        const ph = getPhrase(date, dayIdx);
+        if (ph) cell.setAttribute('data-phrase', ph);
+      } else if (date < today) {
+        cell.classList.add('past');
+        const ph = getPhrase(date, dayIdx);
+        if (ph) cell.setAttribute('data-phrase', ph);
+      } else {
+        cell.classList.add('future');
+        const ph = getPhrase(date, dayIdx);
+        if (ph) cell.setAttribute('data-phrase', ph);
+      }
+
+      dayGrid.appendChild(cell);
+    }
+
+    cur.setMonth(cur.getMonth() + 1);
+  }
+
+  // ===== Intersection observer for month blocks =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.month-block').forEach(b => observer.observe(b));
+
+  // ===== Popup =====
+  const popup = document.getElementById('popup');
+  const popDate = document.getElementById('popDate');
+  const popText = document.getElementById('popText');
+  let popTimer;
+  function showPopup(cell) {
+    popDate.textContent = cell.dataset.date;
+    popText.textContent = cell.dataset.phrase;
+    popup.classList.add('show');
+    clearTimeout(popTimer);
+    popTimer = setTimeout(() => popup.classList.remove('show'), 7000);
+  }
+  grid.addEventListener('click', (e) => {
+    const c = e.target.closest('.day-cell[data-phrase]');
+    if (c) showPopup(c); else popup.classList.remove('show');
+  });
+  if (window.matchMedia('(hover: hover)').matches) {
+    grid.addEventListener('mouseover', (e) => {
+      const c = e.target.closest('.day-cell[data-phrase]');
+      if (c) showPopup(c);
+    });
+    grid.addEventListener('mouseleave', () => popup.classList.remove('show'));
+  }
+
+  // ===== Floating hearts on click =====
+  document.addEventListener('click', (e) => {
+    const emojis = ['♡','♥','💛','✨','🌟'];
+    for (let i = 0; i < 3; i++) {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      h.style.left = (e.clientX - 10 + (Math.random()-0.5)*40) + 'px';
+      h.style.top  = (e.clientY - 10) + 'px';
+      h.style.animationDelay = (i * 0.1) + 's';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 4000);
+    }
+  });
+</script>
+</body>
+</html>
