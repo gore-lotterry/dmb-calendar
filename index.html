@@ -8,16 +8,60 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    /* === ЗИМА (дек, янв, фев) — холодный, синевато-серый === */
     :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --surface2: #1a1a24;
-      --accent: #c8a96e;
-      --accent2: #e8c99e;
-      --text: #e8e4dc;
-      --muted: #6b6875;
-      --green: #4a7c59;
-      --green2: #6aaa80;
+      --bg: #0d0f18;
+      --surface: #131620;
+      --surface2: #1c2030;
+      --accent: #7eb8e8;
+      --accent2: #aad4f5;
+      --text: #d8e4f0;
+      --muted: #5a6a80;
+      --green: #3a7a6a;
+      --green2: #5aaa90;
+      --stars-vis: visible;
+    }
+
+    /* === ВЕСНА (мар, апр, май) === */
+    :root[data-season='spring'] {
+      --bg: #2a1e30;
+      --surface: #352440;
+      --surface2: #432e52;
+      --accent: #c47ee8;
+      --accent2: #dba8f8;
+      --text: #ecddf8;
+      --muted: #8870a0;
+      --green: #5a9e6a;
+      --green2: #7ec88e;
+      --stars-vis: visible;
+    }
+
+    /* === ЛЕТО (июн, июл, авг) === */
+    :root[data-season='summer'] {
+      --bg: #1e2a10;
+      --surface: #2a3a16;
+      --surface2: #36481e;
+      --accent: #f0c63c;
+      --accent2: #ffe27a;
+      --text: #f4f1d2;
+      --muted: #a3b072;
+      --green: #5f9e2c;
+      --green2: #8fcc45;
+      --stars-vis: visible;
+    }
+
+    /* === ОСЕНЬ (сен, окт, ноя) === */
+    :root[data-season='autumn'] {
+      --bg: #12100a;
+      --surface: #1c1a0e;
+      --surface2: #28240e;
+      --accent: #e8a830;
+      --accent2: #f4c860;
+      --text: #f0e8cc;
+      --muted: #907858;
+      --green: #5a7838;
+      --green2: #80aa50;
+      --stars-vis: visible;
     }
 
     * {
@@ -41,18 +85,55 @@
       inset: 0;
       pointer-events: none;
       z-index: 0;
+      overflow: hidden;
     }
 
-    .star {
+    .particle {
       position: absolute;
-      width: 2px;
-      height: 2px;
-      background: #fff;
-      border-radius: 50%;
-      animation: twinkle var(--d) ease-in-out infinite;
-      animation-delay: var(--delay);
+      pointer-events: none;
+      user-select: none;
+      animation-fill-mode: both;
     }
-
+    /* Зима — снежинки мерцают и медленно падают */
+    .p-snow {
+      font-size: var(--sz, 14px);
+      animation: snowFall var(--d, 8s) linear var(--delay, 0s) infinite;
+      opacity: 0.7;
+    }
+    @keyframes snowFall {
+      0%   { transform: translateY(-10px) rotate(0deg);   opacity: 0.8; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0.2; }
+    }
+    /* Весна — лепестки по диагонали */
+    .p-petal {
+      font-size: var(--sz, 14px);
+      animation: petalFall var(--d, 7s) ease-in var(--delay, 0s) infinite;
+      opacity: 0.8;
+    }
+    @keyframes petalFall {
+      0%   { transform: translate(0, -10px) rotate(0deg); opacity: 0.9; }
+      40%  { transform: translate(-30px, 40vh) rotate(180deg); }
+      100% { transform: translate(20px, 110vh) rotate(360deg); opacity: 0; }
+    }
+    /* Лето — яблоки */
+    .p-apple {
+      font-size: var(--sz, 14px);
+      animation: petalFall var(--d, 7s) ease-in var(--delay, 0s) infinite;
+      opacity: 0.85;
+    }
+    /* Осень — листья кружатся и падают */
+    .p-leaf svg { width: var(--sz, 18px); height: var(--sz, 18px); display: block; }
+    .p-leaf {
+      font-size: var(--sz, 18px);
+      animation: leafFall var(--d, 9s) ease-in-out var(--delay, 0s) infinite;
+      opacity: 0.75;
+    }
+    @keyframes leafFall {
+      0%   { transform: translate(0, -10px) rotate(0deg) scale(1);    opacity: 0.9; }
+      30%  { transform: translate(25px, 30vh) rotate(120deg) scale(0.9); }
+      60%  { transform: translate(-15px, 65vh) rotate(260deg) scale(0.8); }
+      100% { transform: translate(10px, 110vh) rotate(400deg) scale(0.6); opacity: 0; }
+    }
     @keyframes twinkle {
       0%, 100% { opacity: 0.1; transform: scale(1); }
       50% { opacity: 0.8; transform: scale(1.4); }
@@ -167,6 +248,7 @@
     }
 
     .days-label {
+      margin-top: 5px;
       font-size: 10px;
       letter-spacing: 5px;
       text-transform: uppercase;
@@ -369,6 +451,12 @@
       background: transparent;
     }
 
+    .day-cell.pre {
+      background: transparent;
+      color: var(--muted);
+      opacity: 0.35;
+    }
+
     .day-cell.past {
       background: var(--surface2);
       color: var(--muted);
@@ -431,11 +519,10 @@
       transform: translate(-50%, 30px);
       opacity: 0;
       pointer-events: none;
-      background: rgba(18,18,30,0.96);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(200,169,110,0.45);
+      background: var(--surface);
+      border: 1px solid rgba(128,128,128,0.2);
       border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
       padding: 20px 24px;
       text-align: center;
       z-index: 300;
@@ -539,9 +626,53 @@
       .day-cell { font-size: 11px; }
       .month-block { padding: 14px; }
     }
+    /* Season switcher */
+    @media (max-width: 1023px) {
+      body .season-switcher { display: none; }
+    }
+
+    .season-switcher {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 500;
+      display: flex;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 4px;
+      gap: 2px;
+    }
+    .season-btn {
+      background: transparent;
+      border: none;
+      border-radius: 22px;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      cursor: pointer;
+      opacity: 0.35;
+      transition: opacity 0.2s, background 0.25s;
+    }
+    .season-btn:hover { opacity: 0.75; }
+    .season-btn.active {
+      background: var(--accent);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
+
+<div class="season-switcher">
+  <button class="season-btn" title="Зима" onclick="setSeason('winter')">❄️</button>
+  <button class="season-btn" title="Весна" onclick="setSeason('spring')">🌸</button>
+  <button class="season-btn" title="Лето" onclick="setSeason('summer')">☀️</button>
+  <button class="season-btn" title="Осень" onclick="setSeason('autumn')">🍂</button>
+</div>
 
 <div class="stars" id="stars"></div>
 
@@ -613,6 +744,14 @@
   Жди меня, и я вернусь — <strong>Кристинка</strong>, только жди ♡
 </footer>
 
+<script>
+(function(){
+  const m=new Date().getMonth();
+  const s=m>=2&&m<=4?'spring':m>=5&&m<=7?'summer':m>=8&&m<=10?'autumn':'winter';
+  if(s!=='winter')document.documentElement.setAttribute('data-season',s);
+})();
+</script>
+
 <div class="popup" id="popup"><div class="pop-date" id="popDate"></div><div class="pop-text" id="popText"></div></div>
 
 <script src="phrases.js"></script>
@@ -621,22 +760,54 @@
   const CALL_DATE = new Date('2026-11-18T00:00:00');
   const DMB_DATE  = new Date('2027-11-18T00:00:00');
 
-  // ===== Stars =====
+  // ===== Seasonal particles =====
   const starsEl = document.getElementById('stars');
-  for (let i = 0; i < 120; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    s.style.cssText = `
-      left:${Math.random()*100}%;
-      top:${Math.random()*100}%;
-      --d:${2+Math.random()*4}s;
-      --delay:${Math.random()*4}s;
-      opacity:${0.1+Math.random()*0.4};
-      width:${1+Math.random()*2}px;
-      height:${1+Math.random()*2}px;
-    `;
-    starsEl.appendChild(s);
+  function getSeason() {
+    return document.documentElement.getAttribute('data-season') || 'winter';
   }
+  function clearParticles() {
+    starsEl.innerHTML = '';
+  }
+  function spawn(cls, symbols, count, szMin, szSpan, dMin, dSpan, topSpan) {
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle ' + cls;
+      p.textContent = symbols[i % symbols.length];
+      const sz = szMin + Math.random() * szSpan;
+      p.style.cssText = `left:${Math.random()*100}%;top:${-5-Math.random()*topSpan}%;--sz:${sz}px;--d:${dMin+Math.random()*dSpan}s;--delay:${-Math.random()*14}s`;
+      starsEl.appendChild(p);
+    }
+  }
+  const LEAF_COLORS = ['#c0392b','#d35400','#e67e22','#f0a020','#b8860b','#8e4a1b'];
+  const LEAF_SHAPES = [
+    c => `<svg viewBox="0 0 24 24"><path fill="${c}" d="M12 1 L14 6 L18 4 L17 9 L22 8 L19 12 L22 14 L16 15 L17 19 L13 17.5 L13 23 L11 23 L11 17.5 L7 19 L8 15 L2 14 L5 12 L2 8 L7 9 L6 4 L10 6 Z"/></svg>`,
+    c => `<svg viewBox="0 0 24 24"><path fill="${c}" d="M12 2 C18 7 19 15 12 21 C5 15 6 7 12 2 Z"/><path stroke="rgba(60,25,5,0.55)" stroke-width="1" fill="none" d="M12 4 L12 23 M12 10 L16 8 M12 14 L8 12 M12 14 L16 12"/></svg>`
+  ];
+  function spawnLeaves(count, szMin, szSpan, dMin, dSpan, topSpan) {
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle p-leaf';
+      p.innerHTML = LEAF_SHAPES[i % LEAF_SHAPES.length](LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)]);
+      const sz = szMin + Math.random() * szSpan;
+      p.style.cssText = `left:${Math.random()*100}%;top:${-5-Math.random()*topSpan}%;--sz:${sz}px;--d:${dMin+Math.random()*dSpan}s;--delay:${-Math.random()*14}s`;
+      starsEl.appendChild(p);
+    }
+  }
+
+  function buildParticles() {
+    clearParticles();
+    const s = getSeason();
+    if (s === 'winter') {
+      spawn('p-snow', ['❄','❅','❆'], 60, 10, 10, 6, 8, 80);
+    } else if (s === 'spring') {
+      spawn('p-petal', ['🌸','🌺','✿'], 40, 10, 8, 5, 7, 60);
+    } else if (s === 'autumn') {
+      spawnLeaves(35, 16, 14, 6, 8, 60);
+    } else {
+      spawn('p-apple', ['🍎'], 35, 10, 8, 5, 7, 60);
+    }
+  }
+  buildParticles();
 
   // ===== Countdown =====
   const today = new Date();
@@ -725,9 +896,10 @@
         cell.classList.add('dmb-day');
         cell.title = '🎉 ДЕМБЕЛЬ!';
         cell.setAttribute('data-phrase','🎉 ДЕМБЕЛЬ! Иду домой!');
+      } else if (date > DMB_DATE) {
+        cell.classList.add('pre');
       } else if (date < CALL_DATE) {
-        cell.classList.add('past');
-        // days before service
+        cell.classList.add('pre');
       } else if (date.getTime() === today.getTime()) {
         cell.classList.add('today');
         const ph = getPhrase(date, dayIdx);
@@ -769,16 +941,54 @@
     clearTimeout(popTimer);
     popTimer = setTimeout(() => popup.classList.remove('show'), 7000);
   }
-  grid.addEventListener('click', (e) => {
-    const c = e.target.closest('.day-cell[data-phrase]');
-    if (c) showPopup(c); else popup.classList.remove('show');
-  });
+  // Десктоп: наведение
   if (window.matchMedia('(hover: hover)').matches) {
     grid.addEventListener('mouseover', (e) => {
       const c = e.target.closest('.day-cell[data-phrase]');
       if (c) showPopup(c);
     });
     grid.addEventListener('mouseleave', () => popup.classList.remove('show'));
+  }
+
+  // Мобайл: долгий тап (long press)
+  let lpTimer = null;
+  let lpMoved = false;
+  grid.addEventListener('touchstart', (e) => {
+    const c = e.target.closest('.day-cell[data-phrase]');
+    if (!c) return;
+    lpMoved = false;
+    lpTimer = setTimeout(() => {
+      if (!lpMoved) showPopup(c);
+    }, 450);
+  }, { passive: true });
+  grid.addEventListener('touchmove', () => {
+    lpMoved = true;
+    clearTimeout(lpTimer);
+  }, { passive: true });
+  grid.addEventListener('touchend', () => clearTimeout(lpTimer), { passive: true });
+  grid.addEventListener('touchcancel', () => clearTimeout(lpTimer), { passive: true });
+
+  // Клик по пустому месту — закрыть
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.day-cell') && !e.target.closest('.popup')) {
+      popup.classList.remove('show');
+    }
+  });
+
+  // ===== Season switcher =====
+  function setSeason(s) {
+    const r = document.documentElement;
+    if (s === 'winter') r.removeAttribute('data-season');
+    else r.setAttribute('data-season', s);
+    document.querySelectorAll('.season-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('onclick').includes(`'${s}'`));
+    });
+    buildParticles();
+  }
+  // Mark current season active on load
+  {
+    const cur = document.documentElement.getAttribute('data-season') || 'winter';
+    setSeason(cur);
   }
 
   // ===== Floating hearts on click =====
