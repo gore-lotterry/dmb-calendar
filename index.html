@@ -734,7 +734,7 @@
 
 <div class="calendar-section">
   <div class="section-heading">Каждый день — ближе</div>
-  <div class="section-sub">наведи на день, чтобы увидеть послание</div>
+  <div class="section-sub" id="calHint">наведи на день, чтобы увидеть послание</div>
   <div class="months-grid" id="monthsGrid"></div>
 </div>
 
@@ -898,10 +898,12 @@
         cell.setAttribute('data-phrase','🎉 ДЕМБЕЛЬ! Иду домой!');
       } else if (date > DMB_DATE) {
         cell.classList.add('pre');
-      } else if (date < CALL_DATE) {
-        cell.classList.add('pre');
       } else if (date.getTime() === today.getTime()) {
         cell.classList.add('today');
+        const ph = getPhrase(date, dayIdx);
+        if (ph) cell.setAttribute('data-phrase', ph);
+      } else if (date < CALL_DATE) {
+        cell.classList.add('pre');
         const ph = getPhrase(date, dayIdx);
         if (ph) cell.setAttribute('data-phrase', ph);
       } else if (date < today) {
@@ -950,23 +952,11 @@
     grid.addEventListener('mouseleave', () => popup.classList.remove('show'));
   }
 
-  // Мобайл: долгий тап (long press)
-  let lpTimer = null;
-  let lpMoved = false;
-  grid.addEventListener('touchstart', (e) => {
+  // Тап/клик по дню — на любом устройстве
+  grid.addEventListener('click', (e) => {
     const c = e.target.closest('.day-cell[data-phrase]');
-    if (!c) return;
-    lpMoved = false;
-    lpTimer = setTimeout(() => {
-      if (!lpMoved) showPopup(c);
-    }, 450);
-  }, { passive: true });
-  grid.addEventListener('touchmove', () => {
-    lpMoved = true;
-    clearTimeout(lpTimer);
-  }, { passive: true });
-  grid.addEventListener('touchend', () => clearTimeout(lpTimer), { passive: true });
-  grid.addEventListener('touchcancel', () => clearTimeout(lpTimer), { passive: true });
+    if (c) showPopup(c);
+  });
 
   // Клик по пустому месту — закрыть
   document.addEventListener('click', (e) => {
@@ -974,6 +964,12 @@
       popup.classList.remove('show');
     }
   });
+
+  // Текст подсказки зависит от устройства
+  if (!window.matchMedia('(hover: hover)').matches) {
+    const h = document.getElementById('calHint');
+    if (h) h.textContent = 'нажми на день, чтобы увидеть послание';
+  }
 
   // ===== Season switcher =====
   function setSeason(s) {
