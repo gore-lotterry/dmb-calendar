@@ -495,6 +495,16 @@
       transform: scale(1.08);
     }
 
+    .day-cell.locked {
+      cursor: default;
+    }
+
+    .day-cell.locked.future:hover {
+      background: var(--surface2);
+      border: none;
+      transform: none;
+    }
+
     .day-cell.dmb-day {
       background: linear-gradient(135deg, var(--green), var(--green2)) !important;
       color: #fff !important;
@@ -566,6 +576,56 @@
     footer strong {
       color: var(--accent2);
       font-weight: 400;
+    }
+
+    .love-heart {
+      background: none;
+      border: none;
+      padding: 0;
+      margin-left: 8px;
+      font-family: inherit;
+      font-style: normal;
+      font-size: 22px;
+      line-height: 1;
+      vertical-align: -2px;
+      color: var(--accent2);
+      cursor: pointer;
+      animation: lovePulse 2.6s ease-in-out infinite;
+      transition: transform 0.25s ease, color 0.25s ease;
+    }
+
+    .love-heart:hover,
+    .love-heart:focus-visible {
+      transform: scale(1.3);
+      color: #ff8fa8;
+      outline: none;
+    }
+
+    .love-heart.show {
+      color: #ff8fa8;
+    }
+
+    @keyframes lovePulse {
+      0%, 100% { opacity: 0.55; }
+      50%       { opacity: 1; }
+    }
+
+    .love-note {
+      max-height: 0;
+      margin-top: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-6px);
+      font-size: 21px;
+      color: var(--accent2);
+      transition: opacity 0.45s ease, transform 0.45s ease, max-height 0.45s ease, margin-top 0.45s ease;
+    }
+
+    .love-note.show {
+      max-height: 140px;
+      margin-top: 14px;
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* Floating hearts */
@@ -741,7 +801,8 @@
 </div>
 
 <footer>
-  Жди меня, и я вернусь — <strong>Кристинка</strong>, только жди ♡
+  Жди меня, и я вернусь — <strong>Кристинка</strong>, только жди<button class="love-heart" id="loveHeart" type="button" aria-label="Секретик">♡</button>
+  <div class="love-note" id="loveNote" role="status">да моя ж ты хорошая, я тебя очень сильно люблю</div>
 </footer>
 
 <script>
@@ -895,25 +956,28 @@
       if (date.getTime() === DMB_DATE.getTime()) {
         cell.classList.add('dmb-day');
         cell.title = '🎉 ДЕМБЕЛЬ!';
-        cell.setAttribute('data-phrase','🎉 ДЕМБЕЛЬ! Иду домой!');
       } else if (date > DMB_DATE) {
         cell.classList.add('pre');
       } else if (date.getTime() === today.getTime()) {
         cell.classList.add('today');
-        const ph = getPhrase(date, dayIdx);
-        if (ph) cell.setAttribute('data-phrase', ph);
       } else if (date < CALL_DATE) {
         cell.classList.add('pre');
-        const ph = getPhrase(date, dayIdx);
-        if (ph) cell.setAttribute('data-phrase', ph);
       } else if (date < today) {
         cell.classList.add('past');
+      } else {
+        cell.classList.add('future');
+      }
+
+      // Фраза открывается только с наступлением дня, прошедшие — всегда
+      if (date <= today) {
         const ph = getPhrase(date, dayIdx);
         if (ph) cell.setAttribute('data-phrase', ph);
       } else {
-        cell.classList.add('future');
-        const ph = getPhrase(date, dayIdx);
-        if (ph) cell.setAttribute('data-phrase', ph);
+        cell.classList.add('locked');
+        cell.dataset.locked = '1';
+        if (!cell.classList.contains('dmb-day')) {
+          cell.title = 'Этот день ещё не наступил';
+        }
       }
 
       dayGrid.appendChild(cell);
@@ -936,12 +1000,18 @@
   const popDate = document.getElementById('popDate');
   const popText = document.getElementById('popText');
   let popTimer;
-  function showPopup(cell) {
-    popDate.textContent = cell.dataset.date;
-    popText.textContent = cell.dataset.phrase;
+  function openPopup(dateLabel, text) {
+    popDate.textContent = dateLabel;
+    popText.textContent = text;
     popup.classList.add('show');
     clearTimeout(popTimer);
     popTimer = setTimeout(() => popup.classList.remove('show'), 7000);
+  }
+  function showPopup(cell) {
+    openPopup(cell.dataset.date, cell.dataset.phrase);
+  }
+  function showLocked(cell) {
+    openPopup(cell.dataset.date, 'Этот день ещё не наступил ♡');
   }
   // Десктоп: наведение
   if (window.matchMedia('(hover: hover)').matches) {
@@ -954,8 +1024,10 @@
 
   // Тап/клик по дню — на любом устройстве
   grid.addEventListener('click', (e) => {
-    const c = e.target.closest('.day-cell[data-phrase]');
-    if (c) showPopup(c);
+    const c = e.target.closest('.day-cell');
+    if (!c) return;
+    if (c.dataset.phrase) showPopup(c);
+    else if (c.dataset.locked) showLocked(c);
   });
 
   // Клик по пустому месту — закрыть
@@ -999,6 +1071,28 @@
       h.style.animationDelay = (i * 0.1) + 's';
       document.body.appendChild(h);
       setTimeout(() => h.remove(), 4000);
+    }
+  });
+
+  // ===== Секретик для Кристинки =====
+  const loveHeart = document.getElementById('loveHeart');
+  const loveNote = document.getElementById('loveNote');
+  loveHeart.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = loveNote.classList.toggle('show');
+    loveHeart.classList.toggle('show', open);
+    if (!open) return;
+    const r = loveHeart.getBoundingClientRect();
+    for (let i = 0; i < 8; i++) {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = ['♡','♥','💛'][i % 3];
+      h.style.left = (r.left + r.width / 2 - 8 + (Math.random() - 0.5) * 70) + 'px';
+      h.style.top = (r.top - 10) + 'px';
+      h.style.fontSize = (14 + Math.random() * 10) + 'px';
+      h.style.animationDelay = (i * 0.08) + 's';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 4500);
     }
   });
 </script>
